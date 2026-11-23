@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AJIT AI — Created by Ajit Babu</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body {
+      background: #0b0f17;
+      color: #f3f4f6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #131a2a;
+      border-bottom: 1px solid #243049;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 38px; height: 38px; border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; color: #fff;
+    }
+    .title-wrap h1 { font-size: 17px; font-weight: 700; letter-spacing: 0.4px; }
+    .title-wrap p { font-size: 11px; color: #9ca3af; }
+    .key-btn {
+      background: #1f2937; color: #e5e7eb; border: 1px solid #374151;
+      padding: 7px 11px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    }
+    .key-panel {
+      display: none; background: #111827; padding: 12px 16px;
+      border-bottom: 1px solid #243049; gap: 8px; flex-wrap: wrap;
+    }
+    .key-panel.show { display: flex; }
+    .key-panel input {
+      flex: 1; min-width: 200px; padding: 9px 11px; border-radius: 8px;
+      border: 1px solid #374151; background: #0b0f17; color: #fff; font-size: 13px;
+    }
+    .key-panel button {
+      background: #2563eb; color: #fff; border: none; padding: 9px 14px;
+      border-radius: 8px; font-weight: 600; cursor: pointer;
+    }
+    #chat {
+      flex: 1; padding: 16px; display: flex; flex-direction: column;
+      gap: 12px; overflow-y: auto; padding-bottom: 90px;
+    }
+    .msg {
+      max-width: 85%; padding: 12px 14px; border-radius: 14px;
+      line-height: 1.5; font-size: 14px; white-space: pre-wrap; word-wrap: break-word;
+    }
+    .bot {
+      align-self: flex-start; background: #172033; border: 1px solid #26344f;
+      border-bottom-left-radius: 4px;
+    }
+    .user {
+      align-self: flex-end; background: #2563eb; color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .composer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #131a2a; border-top: 1px solid #243049;
+      padding: 10px 12px; display: flex; gap: 8px; align-items: center;
+    }
+    .composer input {
+      flex: 1; padding: 11px 14px; border-radius: 22px;
+      border: 1px solid #334155; background: #0b0f17; color: #fff; font-size: 14px;
+      outline: none;
+    }
+    .send-btn {
+      background: #2563eb; color: #fff; border: none;
+      width: 42px; height: 42px; border-radius: 50%;
+      font-weight: 700; cursor: pointer; font-size: 15px;
+    }
+    .status { font-size: 11px; color: #9ca3af; padding: 0 16px 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">A</div>
+      <div class="title-wrap">
+        <h1>AJIT AI</h1>
+        <p>Created by Ajit Babu</p>
+      </div>
+    </div>
+    <button class="key-btn" onclick="toggleKey()">🔑 API Key</button>
+  </header>
+
+  <div class="key-panel" id="keyPanel">
+    <input type="password" id="apiKeyInput" placeholder="Apni Gemini API Key yahan paste karein (AIza...)" />
+    <button onclick="saveKey()">Save</button>
+  </div>
+
+  <div id="chat">
+    <div class="msg bot">Namaste! Main <b>AJIT AI</b> hoon, jise <b>Ajit Babu</b> ne banaya hai. Aap Hindi, Hinglish ya English mein kuch bhi pooch sakte hain!</div>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="composer">
+    <input type="text" id="promptInput" placeholder="AJIT AI se kuch poochein..." onkeydown="if(event.key==='Enter') sendMsg()" />
+    <button class="send-btn" onclick="sendMsg()">➤</button>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "ajit_ai_gemini_key";
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) document.getElementById("apiKeyInput").value = saved;
+
+    const history = [
+      {
+        role: "user",
+        parts: [{ text: "Tum kaun ho aur tumhe kisne banaya hai?" }]
+      },
+      {
+        role: "model",
+        parts: [{ text: "Main AJIT AI hoon, jise Ajit Babu ne banaya hai. Main madadgar, samajhdar aur dostana andaaz mein jawab deta hoon." }]
+      }
+    ];
+
+    function toggleKey() {
+      document.getElementById("keyPanel").classList.toggle("show");
+    }
+
+    function saveKey() {
+      const val = document.getElementById("apiKeyInput").value.trim();
+      if (!val) return alert("Pehle API Key paste karein.");
+      localStorage.setItem(STORAGE_KEY, val);
+      document.getElementById("keyPanel").classList.remove("show");
+      alert("API Key save ho gayi!");
+    }
+
+    function addBubble(text, sender) {
+      const chat = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = "msg " + sender;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    async function sendMsg() {
+      const input = document.getElementById("promptInput");
+      const text = input.value.trim();
+      const apiKey = localStorage.getItem(STORAGE_KEY) || document.getElementById("apiKeyInput").value.trim();
+
+      if (!text) return;
+      if (!apiKey) {
+        document.getElementById("keyPanel").classList.add("show");
+        alert("Pehle upar 🔑 API Key mein apni key daal kar Save karein.");
+        return;
+      }
+
+      input.value = "";
+      addBubble(text, "user");
+      history.push({ role: "user", parts: [{ text }] });
+
+      const status = document.getElementById("status");
+      status.textContent = "AJIT AI soch raha hai...";
+
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: "Tum AJIT AI ho, jise Ajit Babu ne banaya hai. Hamesha madadgar, clear aur user ki bhasha (Hindi/Hinglish/English) mein jawab do." }]
+              },
+              contents: history
+            })
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "API error");
+
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Koi jawab nahi mila.";
+        history.push({ role: "model", parts: [{ text: reply }] });
+        addBubble(reply, "bot");
+        status.textContent = "";
+      } catch (err) {
+        status.textContent = "";
+        addBubble("Error: " + err.message, "bot");
+      }
+    }
+  </script>
+</body>
+</html>
