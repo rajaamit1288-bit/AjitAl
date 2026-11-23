@@ -1,4 +1,98 @@
-overflow-y: auto; padding-bottom: 90px;
+overflow-y: auto; padding-bottom: 90px;<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ajit Babu AI</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body { background: #0d1117; color: #f0f6fc; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #161b22; border-bottom: 1px solid #30363d; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #2563eb, #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #fff; }
+    .brand h1 { font-size: 17px; }
+    .brand p { font-size: 12px; color: #8b949e; }
+    .badge { font-size: 11px; background: #1f2937; color: #93c5fd; border: 1px solid #374151; padding: 5px 9px; border-radius: 999px; }
+    main { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; max-width: 760px; width: 100%; margin: 0 auto; overflow-y: auto; padding-bottom: 90px; }
+    .msg { max-width: 85%; padding: 12px 14px; border-radius: 14px; font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; }
+    .bot { align-self: flex-start; background: #161b22; border: 1px solid #30363d; border-bottom-left-radius: 4px; }
+    .user { align-self: flex-end; background: #2563eb; color: #fff; border-bottom-right-radius: 4px; }
+    footer { position: fixed; bottom: 0; left: 0; right: 0; background: #161b22; border-top: 1px solid #30363d; padding: 10px 12px; }
+    .box { max-width: 760px; margin: 0 auto; display: flex; gap: 8px; }
+    input { flex: 1; background: #0d1117; color: #f0f6fc; border: 1px solid #30363d; border-radius: 12px; padding: 12px 14px; font-size: 15px; outline: none; }
+    button { background: #2563eb; color: #fff; border: none; border-radius: 12px; padding: 12px 16px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="avatar">A</div>
+      <div>
+        <h1>Ajit Babu AI</h1>
+        <p>Hindi • Hinglish • Bhojpuri</p>
+      </div>
+    </div>
+    <span class="badge">India Live</span>
+  </header>
+
+  <main id="chat">
+    <div class="msg bot">Namaste! Main Ajit Babu AI hoon. Hindi, Hinglish ya Bhojpuri mein jo poochhna ho poochho!</div>
+  </main>
+
+  <footer>
+    <form class="box" onsubmit="sendMsg(event)">
+      <input id="inp" type="text" placeholder="Ajit Babu AI se kuch poochhein..." required />
+      <button id="btn" type="submit">Bhejo</button>
+    </form>
+  </footer>
+
+  <script>
+    const BACKEND_URL = "https://YOUR-WORKER-URL.workers.dev";
+    const chat = document.getElementById("chat");
+    const inp = document.getElementById("inp");
+    const btn = document.getElementById("btn");
+
+    function addMsg(text, who) {
+      const d = document.createElement("div");
+      d.className = "msg " + who;
+      d.textContent = text;
+      chat.appendChild(d);
+      chat.scrollTop = chat.scrollHeight;
+      return d;
+    }
+
+    async function sendMsg(e) {
+      e.preventDefault();
+      const text = inp.value.trim();
+      if (!text) return;
+      addMsg(text, "user");
+      inp.value = "";
+      btn.disabled = true;
+      const wait = addMsg("Ajit Babu AI likh raha hai...", "bot");
+
+      try {
+        if (!BACKEND_URL || BACKEND_URL.includes("YOUR-WORKER-URL")) {
+          wait.textContent = "Backend abhi connect hona baaki hai. Worker URL lagate hi sabke liye reply aane lagega!";
+          return;
+        }
+        const r = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await r.json();
+        wait.textContent = r.ok ? (data.reply || "Koi jawab nahi aaya.") : (data.error || "Dikkat aayi.");
+      } catch {
+        wait.textContent = "Server se connect nahi ho paaya. Dobara koshish karein.";
+      } finally {
+        btn.disabled = false;
+        inp.focus();
+      }
+    }
+  </script>
+</body>
+</html>
+
     }
     .msg {
       max-width: 85%; padding: 12px 14px; border-radius: 14px;
